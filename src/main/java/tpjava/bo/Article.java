@@ -2,6 +2,12 @@ package tpjava.bo;
 
 import java.util.Objects;
 
+/**
+ * Bean Object qui contient les informations des articles.
+ * Les informations contenues sont un nom unique par article.
+ *
+ * @author Glen OLLIVIER
+ */
 public class Article {
     private String name;
 

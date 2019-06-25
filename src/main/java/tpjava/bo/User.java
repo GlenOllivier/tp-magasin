@@ -4,6 +4,14 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.Objects;
 
+/**
+ * Bean Object qui contient les informations des utilisateurs.
+ * Les informations contenues sont un nom, une adresse email unique et
+ * une date de naissance. Une méthode getAge permet de connaitre l'age
+ * de l'utilisateur.
+ *
+ * @author Glen OLLIVIER
+ */
 public class User {
     private String name;
     private String email;
