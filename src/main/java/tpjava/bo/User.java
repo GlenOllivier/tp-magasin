@@ -41,6 +41,10 @@ public class User {
         return p.getYears();
     }
 
+    public boolean isVip() {
+        return false;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

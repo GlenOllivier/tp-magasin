@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tpjava.bo.Article;
 import tpjava.bo.User;
+import tpjava.bo.Vip;
 
 import java.time.LocalDate;
 
@@ -25,6 +26,7 @@ class MagasinTest {
     public static final User BOB = new User("bob", "bob@keitvimpbev.bzh", LocalDate.of(1995,9,2));
     public static final User FANCH = new User("fañch", "fanch.mitt@ps.gouv.fr", LocalDate.of(1916,10,26));
     public static final User YANNIG = new User("yannig", "yann.koadou@nanarland.org", LocalDate.of(1993,6,12));
+    public static final User SAM = new Vip("sam", "sam.vner@outlook.com", LocalDate.of(1979,2,28));
 
     @BeforeEach
     void setUp() {
@@ -32,6 +34,7 @@ class MagasinTest {
         m.addUser(BOB);
         m.addUser(FANCH);
         m.addUser(YANNIG);
+        m.addUser(SAM);
         m.addArticle(CHIPS, 30);
         m.addArticle(COCA, 15);
         m.addArticle(DORITOS, 5);
@@ -39,6 +42,10 @@ class MagasinTest {
         m.addArticle(PATATE, 50);
         m.addArticle(EAU, 10);
         m.addArticle(VODKA, 3);
+        m.addVipArticle(WHISKY, 30);
+        m.addVipArticle(VODKA, 30);
+        m.addVipArticle(PATATE, 30);
+        m.addVipArticle(PATATE, 30);
         m.addToCart(BOB, CHIPS, 3);
         m.addToCart(BOB, CAROTTE, 3);
         m.addToCart(BOB, PATATE, 5);
@@ -69,6 +76,14 @@ class MagasinTest {
     }
 
     @Test
+    void getStock() {
+        assertEquals(0, m.getStock(WHISKY, false).intValue());
+        assertEquals(30, m.getStock(WHISKY, true).intValue());
+        assertEquals(3, m.getStock(VODKA, false).intValue());
+        assertEquals(33, m.getStock(VODKA, true).intValue());
+    }
+
+    @Test
     void buy() {
         assertTrue(m.buy(CHIPS, 10));
         assertEquals(20, m.getStock(CHIPS).intValue());
@@ -89,6 +104,12 @@ class MagasinTest {
         m.buy(CHIPS, 25);
         assertFalse(m.addToCart(YANNIG, CHIPS, 10));
         assertTrue(m.addToCart(YANNIG, CHIPS, 5));
+
+
+        assertFalse(m.addToCart(YANNIG, WHISKY, 10));
+        assertTrue(m.addToCart(SAM, WHISKY, 10));
+        assertFalse(m.addToCart(YANNIG, VODKA, 33));
+        assertTrue(m.addToCart(SAM, VODKA, 33));
     }
 
     @Test
@@ -100,5 +121,13 @@ class MagasinTest {
         m.empty(YANNIG);
         m.addToCart(YANNIG, CHIPS, 27);
         assertTrue(m.checkout(YANNIG));
+    }
+
+    @Test
+    void buyVip() {
+        assertTrue(m.buy(WHISKY, 10, true));
+        assertFalse(m.buy(WHISKY, 10, false));
+        assertFalse(m.buy(VODKA, 10, false));
+        assertTrue(m.buy(VODKA, 33, true));
     }
 }

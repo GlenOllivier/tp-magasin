@@ -15,10 +15,12 @@ import java.util.Map;
 public class Magasin {
     private Map<User, Cart> users;
     private Map<Article, Integer> articles;
+    private Map<Article, Integer> articlesVip;
 
     public Magasin() {
         users = new HashMap<>();
         articles = new HashMap<>();
+        articlesVip = new HashMap<>();
     }
 
     /**
@@ -55,31 +57,93 @@ public class Magasin {
     }
 
     /**
-     * Méthode qui renvoie la quantité en stock d'un article donné.
+     * Méthode qui ajoute un nouvel article au stock VIP du magasin, ou qui augmente le
+     * stock d'un Article existant.
+     *
+     * @param article L'article à ajouter/restocker.
+     * @param nb      Le nombre de cet article à ajouter.
+     * @return Le nombre total de cet article dans le stock VIP du magasin après cette opération.
+     */
+
+    public Integer addVipArticle(Article article, Integer nb) {
+        if (articlesVip.containsKey(article)) {
+            nb += articlesVip.get(article);
+        }
+        articlesVip.put(article, nb);
+        return nb;
+    }
+    /**
+     * Méthode qui renvoie la quantité en stock d'un article donné. Cette méthode considère que
+     * l'utilisateur n'est pas VIP.
      *
      * @param article L'article dont on veux connaître le stock.
      * @return La quantité de cet article en stock (0 si l'article n'est pasn dans le magasin).
      */
     public Integer getStock(Article article) {
+        return getStock(article, false);
+    }
+
+    /**
+     * Méthode qui renvoie la quantité en stock d'un article donné. Cette méthode demande si
+     * l'utilisateur est VIP.
+     *
+     * @param article L'article dont on veux connaître le stock.
+     * @param isVip   Le statut de l'utilisateur demandant le stock.
+     * @return La quantité de cet article en stock (0 si l'article n'est pasn dans le magasin).
+     */
+    public Integer getStock(Article article, boolean isVip) {
         int nb = 0;
         if (articles.containsKey(article)) {
             nb += articles.get(article);
+        }
+        if (isVip && articlesVip.containsKey(article)) {
+            nb += articlesVip.get(article);
         }
         return nb;
     }
 
     /**
-     * Méthode qui permet d'acheter une quantité donnée d'un article donné.
+     * Méthode qui permet d'acheter une quantité donnée d'un article donné. Cette méthode considère
+     * que l'utilisateur n'est pas VIP.
      *
      * @param article L'article q'on veux acheter.
      * @param nb      La quantité à acheter.
      * @return true si l'achat a bien été effectué, false sinon (stock insuffisant, ...).
      */
     public boolean buy(Article article, Integer nb) {
+        return buy(article, nb, false);
+    }
+
+    /**
+     * Méthode qui permet d'acheter une quantité donnée d'un article donné. Cette méthode demande
+     * si l'utilisateur est VIP.
+     *
+     * @param article L'article q'on veux acheter.
+     * @param nb      La quantité à acheter.
+     * @param isVip   Le statut de l'utilisateur achetant.
+     * @return true si l'achat a bien été effectué, false sinon (stock insuffisant, ...).
+     */
+    public boolean buy(Article article, Integer nb, boolean isVip) {
         boolean bought = false;
-        if (articles.containsKey(article) && articles.get(article) >= nb) {
-            articles.put(article, articles.get(article) - nb);
-            bought = true;
+        int nbStock = 0;
+        if (articles.containsKey(article)) {
+            nbStock += articles.get(article);
+        }
+        if (isVip && articlesVip.containsKey(article)) {
+            nbStock += articlesVip.get(article);
+        }
+        if (nbStock >= nb) {
+            if (articles.containsKey(article) && articles.get(article) >= nb) {
+                articles.put(article, articles.get(article) - nb);
+                bought = true;
+            } else if (isVip) {
+                if (articles.containsKey(article)) {
+                    nb -= articles.get(article);
+                    articles.put(article, 0);
+                }
+                articlesVip.put(article, articlesVip.get(article) - nb);
+                bought = true;
+            }
         }
         return bought;
     }
@@ -95,7 +159,7 @@ public class Magasin {
     public boolean addToCart(User user, Article article, Integer nb) {
         boolean added = false;
         if (users.containsKey(user) && nb > 0) {
-            if (users.get(user).add(article, nb) >= nb) {
+            if (users.get(user).add(article, nb, user.isVip()) >= nb) {
                 added = true;
             }
         }
@@ -112,7 +176,7 @@ public class Magasin {
     public boolean checkout(User user) {
         boolean bought = false;
         if (users.containsKey(user)) {
-            if (users.get(user).checkout()) {
+            if (users.get(user).checkout(user.isVip())) {
                 bought = true;
             }
         }
